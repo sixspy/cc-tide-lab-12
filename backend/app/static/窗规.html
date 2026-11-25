@@ -39,9 +39,14 @@
     <main class="主区">
       <header class="页头">
         <h1>窗规</h1>
-        <p>当前窗号、窗起止、窗长秒。邻题可改日界/水位空桩，勿改坏默认样例窗。</p>
+        <p>当前窗号、窗起止、窗长秒，以及切片键契约只读快照。切片键与窗规声明同票。</p>
       </header>
 
+      <section class="卷">
+        <h2>切片键契约（只读）</h2>
+        <div class="水位" id="契卡"></div>
+        <p class="说明" id="契注">加载中…</p>
+      </section>
       <section class="卷">
         <h2>窗规原文</h2>
         <pre class="回执" id="规">加载中…</pre>
@@ -50,12 +55,24 @@
         <h2>空桩目录</h2>
         <p class="说明" id="空桩"></p>
         <div class="双栏">
-          <p class="说明">窗规钉死当前窗。改时钟漂移属于空桩，不在基线默认路径。</p>
+          <p class="说明">窗规钉死当前窗。切片键与窗规声明同票：票指纹由窗号+窗起止+契约版+指纹算出，关窗时随片落账。</p>
           <div class="侧注">子方向：采集入库编排。行业皮：物流网点轨迹。去皮：事件时关窗管道。</div>
         </div>
       </section>
       <script>
       (async () => {
+        const d = await 潮切.getJSON("/api/切片键契约");
+        const 卡 = document.getElementById("契卡"); 卡.innerHTML = "";
+        for (const [标, 值] of [["契约版", d.契约版], ["指纹", d.指纹 || "—"], ["形态", d["形态标记"]], ["valid", d.valid ? "有效" : "无效"]]) {
+          const x = document.createElement("div");
+          x.className = "水卡";
+          x.innerHTML = `<div class="数">${潮切.安全文本(值)}</div><div class="标">${标}</div>`;
+          卡.appendChild(x);
+        }
+        const 注 = [`策略 ${d.策略名 || d["形态标记"]}`, `模板 ${d.模板 || "—"}`, `现行片 ${d.现行片数}`, `归档行 ${d.归档行数}`];
+        if (d.拒因) 注.push("最近拒因：" + d.拒因 + (d.拒指纹 ? `（拒指纹 ${d.拒指纹.slice(0, 8)}）` : ""));
+        if (d.归档键) 注.push("最近归档键：" + d.归档键);
+        document.getElementById("契注").textContent = 注.join(" · ");
         document.getElementById("规").textContent = JSON.stringify(await 潮切.getJSON("/api/窗规"), null, 2);
         const s = await 潮切.getJSON("/api/空桩");
         document.getElementById("空桩").textContent = "空桩 " + s.条数 + "：" + (s.空桩 || []).join(" · ");

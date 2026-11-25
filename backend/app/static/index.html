@@ -66,6 +66,12 @@
         </div>
       </section>
       <section class="卷">
+        <h2>切片键契约</h2>
+        <p class="说明">关窗入库管道的键契约。现行切片只读新契约键；过期契约载荷整票进只读归档，现行不涨。</p>
+        <div class="水位" id="契卡"></div>
+        <p class="说明" id="契注">加载中…</p>
+      </section>
+      <section class="卷">
         <h2>水位</h2>
         <div class="水位" id="水位"></div>
         <div class="工具">
@@ -83,6 +89,18 @@
         document.getElementById("尺起").textContent = (r["窗起"] || "窗起").slice(11, 16) || "窗起";
         document.getElementById("尺止").textContent = (r["窗止"] || "窗止").slice(11, 16) || "窗止";
         潮切.渲染水位(document.getElementById("水位"), o);
+        const d = await 潮切.getJSON("/api/切片键契约");
+        const 卡 = document.getElementById("契卡"); 卡.innerHTML = "";
+        for (const [标, 值] of [["契约版", d.契约版], ["指纹", (d.指纹 || "—").slice(0, 10)], ["现行片", d.现行片数], ["归档行", d.归档行数]]) {
+          const x = document.createElement("div");
+          x.className = "水卡";
+          x.innerHTML = `<div class="数">${潮切.安全文本(值)}</div><div class="标">${标}</div>`;
+          卡.appendChild(x);
+        }
+        const 注 = [`策略 ${d.策略名 || d["形态标记"]}`, d.valid ? "valid 有效" : "valid 无效"];
+        if (d.拒因) 注.push("拒因：" + d.拒因 + (d.拒指纹 ? `（拒指纹 ${d.拒指纹.slice(0, 8)}）` : ""));
+        if (d.归档键) 注.push("归档键：" + d.归档键);
+        document.getElementById("契注").textContent = 注.join(" · ");
       }
       async function 跑(fn) {
         const el = document.getElementById("回执");

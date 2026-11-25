@@ -3,6 +3,7 @@ from starlette.responses import JSONResponse
 from starlette.routing import Route
 from pathlib import Path
 from app.services import 目录, 装载, 关窗, 贯验, 夹具, 统计, 说明
+from app.modules import 切片键契约 as 契约
 
 
 async def api_概览(request: Request):
@@ -79,6 +80,22 @@ async def api_统计缓冲(request: Request):
     return JSONResponse(统计.缓冲命运())
 
 
+async def api_切片键契约(request: Request):
+    return JSONResponse(契约.概览())
+
+
+async def api_切片键契约_声明(request: Request):
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+    return JSONResponse(契约.声明契约(body))
+
+
+async def api_切片归档(request: Request):
+    return JSONResponse(契约.归档列表())
+
+
 async def api_空桩(request: Request):
     root = Path(__file__).resolve().parents[1] / "modules"
     out = []
@@ -105,6 +122,9 @@ async def api_空桩(request: Request):
     Route("/api/观测点/夹具/{name}", api_夹具装载, methods=["POST"]),
     Route("/api/关窗/跑", api_关窗, methods=["POST"]),
     Route("/api/窗贯验/跑", api_贯验, methods=["POST"]),
+    Route("/api/切片键契约", api_切片键契约),
+    Route("/api/切片键契约/声明", api_切片键契约_声明, methods=["POST"]),
+    Route("/api/切片归档", api_切片归档),
     Route("/api/统计/观测命运", api_统计观测),
     Route("/api/统计/缓冲命运", api_统计缓冲),
     Route("/api/空桩", api_空桩),

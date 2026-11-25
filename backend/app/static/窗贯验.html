@@ -39,21 +39,27 @@
     <main class="主区">
       <header class="页头">
         <h1>窗贯验</h1>
-        <p>已物化缓冲事件数必须等于切片账事件数之和；对不齐就是撕裂。</p>
+        <p>已物化缓冲事件数必须等于切片账事件数之和，已归档缓冲同理；另有切片键契约检查：编号含窗号+运单键、契约指纹与票指纹同票。</p>
       </header>
 
       <section class="卷">
         <div class="工具"><button class="按钮" id="跑">跑窗贯验</button> <span id="果"></span></div>
-        <div class="表绕"><table><thead><tr><th>时刻</th><th>缓冲笔数</th><th>切片笔数</th><th>迟到笔数</th><th>是否对齐</th><th>说明</th></tr></thead><tbody id="表"></tbody></table></div>
+        <div class="表绕"><table><thead><tr><th>时刻</th><th>缓冲笔数</th><th>切片笔数</th><th>归档事件</th><th>迟到笔数</th><th>是否对齐</th><th>键检查</th><th>说明</th></tr></thead><tbody id="表"></tbody></table></div>
       </section>
-      <section class="卷"><p class="说明">贯验只认事件数互证，不认墙钟快慢。</p></section>
+      <section class="卷"><p class="说明">贯验只认事件数互证与键契约同票，不认墙钟快慢。归档事件与现行切片分账核对。</p></section>
       <script>
+      function 键检查文本(文) {
+        if (!文) return 潮切.徽章("键齐", "好");
+        let a;
+        try { a = JSON.parse(文); } catch { a = [String(文)]; }
+        return 潮切.徽章(`键检查 ${a.length}`, "危") + " " + 潮切.安全文本(a[0] || "");
+      }
       async function 刷() {
         const rows = await 潮切.getJSON("/api/窗贯验");
         const tb = document.getElementById("表"); tb.innerHTML = "";
         for (const r of rows) {
           const ok = r.是否对齐 ? 潮切.徽章("对齐","好") : 潮切.徽章("撕裂","危");
-          tb.appendChild(潮切.行(`<td>${潮切.安全文本(r.时刻)}</td><td>${r.缓冲笔数}</td><td>${r.切片笔数}</td><td>${r.迟到笔数}</td><td>${ok}</td><td>${潮切.安全文本(r.说明)}</td>`));
+          tb.appendChild(潮切.行(`<td>${潮切.安全文本(r.时刻)}</td><td>${r.缓冲笔数}</td><td>${r.切片笔数}</td><td>${r.归档笔数 || 0}</td><td>${r.迟到笔数}</td><td>${ok}</td><td>${键检查文本(r.键检查)}</td><td>${潮切.安全文本(r.说明)}</td>`));
         }
       }
       document.getElementById("跑").onclick = async () => {
